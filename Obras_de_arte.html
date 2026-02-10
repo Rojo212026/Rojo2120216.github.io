@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galería Maestra | Museo Digital</title>
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<header class="gallery-header">
+  <div class="header-content">
+      <h1>Colección Maestra</h1>
+      <nav>
+          <a href="index.html" class="nav-link">Inicio</a>
+          <a href="concepto.html" class="nav-link">Concepto</a>
+      </nav>
+  </div>
+</header>
+
+<div id="loader" class="loader-container">
+    <div class="spinner"></div>
+    <p>Recuperando obras de alta resolución...</p>
+</div>
+
+<main class="gallery-container" id="gallery" style="display: none;"></main>
+
+<footer class="main-footer">
+    <div class="footer-content">
+        <p>Imágenes cortesía del programa Open Access del Cleveland Museum of Art (CC0).</p>
+        <a href="https://www.clevelandart.org/" target="_blank">Visitar Sitio Oficial del Museo</a>
+    </div>
+</footer>
+
+<script>
+const gallery = document.getElementById("gallery");
+const loader = document.getElementById("loader");
+
+
+const API_URL = "https://openaccess-api.clevelandart.org/api/artworks/?q=landscape&has_image=1&limit=20";
+
+async function fetchArt() {
+    try {
+        const response = await fetch(API_URL);
+        const json = await response.json();
+        const artworks = json.data;
+
+        loader.style.display = "none";
+        gallery.style.display = "grid";
+
+        artworks.forEach(art => {
+          
+            const imageUrl = art.images && art.images.web ? art.images.web.url : null;
+            
+            if (!imageUrl) return;
+
+            const card = document.createElement("div");
+            card.className = "art-card";
+
+            card.innerHTML = `
+                <div class="image-wrapper">
+                    <img src="${imageUrl}" alt="${art.title}" loading="lazy">
+                </div>
+                <div class="card-info">
+                    <h3>${art.title}</h3>
+                    <p class="artist">${art.creators.length > 0 ? art.creators[0].description : "Artista Anónimo"}</p>
+                    <p class="date">${art.creation_date || "Fecha desconocida"}</p>
+                    <p class="technique">${art.technique || ""}</p>
+                </div>
+            `;
+            gallery.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error("Error:", error);
+        loader.innerHTML = "<p>Error de conexión con el museo. Intente más tarde.</p>";
+    }
+}
+
+fetchArt();
+</script>
+
+</body>
+</html>
